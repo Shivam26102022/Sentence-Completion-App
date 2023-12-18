@@ -35,7 +35,7 @@ def train_model(faqs):
 
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-    model.fit(X, y, epochs=100)
+    model.fit(X, y, epochs=50)
 
     return model, tokenizer, max_len
 
