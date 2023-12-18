@@ -9,7 +9,6 @@ from tensorflow.keras.layers import Embedding, LSTM, Dense
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 # Set your OpenAI API key
-openai.api_key = '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'
 
 # Function to train the model
 def train_model(faqs):
@@ -82,7 +81,7 @@ def main():
     sentence_to_predict = st.text_input("Write a sentence for prediction:")
     
     # Text box to input the number of words for prediction (n)
-    n = int(st.text_input("Enter the number of words for prediction:", value=3))
+    n = st.number_input("Enter the number of next words to predict:", min_value=1, value=3)
 
     # Button to predict the next words using the trained model
     if st.button("Predict Next Words"):
@@ -107,6 +106,7 @@ def main():
                     break
 
             st.success(f"Predicted Next Words: {text}")
+    openai.api_key = st.text_input("Enter your OpenAI API key:", type="password")
 
     # Button to complete the sentence using ChatGPT
     if st.button("Complete Sentence"):
