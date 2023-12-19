@@ -12,15 +12,19 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 # Function to train the model
 def train_model(faqs):
+    # Tokenize the input FAQs
     tokenizer = Tokenizer()
     tokenizer.fit_on_texts([faqs])
     input_sequences = []
+    
+    # Create input sequences for training the model
     for sentence in faqs.split('\n'):
         tokenized_sentence = tokenizer.texts_to_sequences([sentence])[0]
 
         for i in range(1, len(tokenized_sentence)):
             input_sequences.append(tokenized_sentence[:i + 1])
 
+    # Pad the input sequences to have consistent length
     max_len = max([len(x) for x in input_sequences])
     padded_input_sequences = pad_sequences(input_sequences, maxlen=max_len, padding='pre')
     X = padded_input_sequences[:, :-1]
@@ -28,33 +32,36 @@ def train_model(faqs):
 
     y = to_categorical(y, num_classes=len(tokenizer.word_index) + 1)
 
+    # Define and compile the LSTM model
     model = Sequential()
     model.add(Embedding(len(tokenizer.word_index) + 1, 100, input_length=max_len - 1))
     model.add(LSTM(150))
     model.add(Dense(len(tokenizer.word_index) + 1, activation='softmax'))
-
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
+    # Train the model
     model.fit(X, y, epochs=100)
 
     return model, tokenizer, max_len
 
 # Function to complete a sentence using OpenAI GPT-3
 def complete_sentence(prompt_template, continuation):
-    prompt = f"{prompt_template} {continuation} and end properl"  # Combine template and continuation
+    # Combine template and continuation for OpenAI GPT-3 prompt
+    prompt = f"{prompt_template} {continuation} and end properl"  
+    # Call OpenAI GPT-3 API for sentence completion
     response = openai.Completion.create(
-        engine="text-davinci-002",  # or other available engines
+        engine="text-davinci-002",  
         prompt=prompt,
-        max_tokens=100  # adjust as needed
+        max_tokens=100  
     )
     
-    # Extract the text from the OpenAI GPT-3 response
+    # Extract the completed text from the OpenAI GPT-3 response
     completed_text = response.choices[0].text.strip()
     
     # Ensure that only one sentence is returned
     sentences = completed_text.split('.')
     if len(sentences) > 1:
-        completed_text = sentences[0]  # Take the first sentence
+        completed_text = sentences[0]  
     
     return completed_text
 
@@ -92,6 +99,7 @@ def main():
             word_count = 0
 
             for i in range(n):
+                # Predict the next word using the trained model
                 token_text = st.session_state.tokenizer.texts_to_sequences([text])[0]
                 padded_token_text = pad_sequences([token_text], maxlen=st.session_state.max_len - 1, padding='pre')
                 pos = np.argmax(st.session_state.model.predict(padded_token_text))
