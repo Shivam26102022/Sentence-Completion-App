@@ -8,7 +8,7 @@ from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.layers import Embedding, LSTM, Dense
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
-# Set your OpenAI API key
+
 
 # Function to train the model
 def train_model(faqs):
